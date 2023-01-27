@@ -1,0 +1,55 @@
+﻿@*<CascadingAuthenticationState>
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <p>Sorry, you're not authorized to reach this page.</p>
+                    <p>You may need to log in as a different user.</p>
+                </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+</CascadingAuthenticationState>*@
+
+@inject TokenProvider TokenProvider
+@inject NavigationManager Navigation
+@using BlazorApp.Areas.Identity;
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin ReturnUrl="@Navigation.ToBaseRelativePath(Navigation.Uri)" />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+<AntContainer />
+
+@code {
+    [Parameter]
+    public InitialAppState? InitialState { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        TokenProvider.XsrfToken = InitialState?.XsrfToken;
+
+        return base.OnInitializedAsync();
+    }
+}

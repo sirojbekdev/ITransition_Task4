@@ -1,0 +1,77 @@
+﻿@page "/Users"
+@using BlazorApp.Areas.Identity.Data;
+@using BlazorApp.Data.Services;
+@inject IUserService userService
+@attribute [Authorize]
+
+<h3>Users</h3>
+
+<div>
+    <div class="flex-column">
+        <Button Danger OnClick="@BlockUsers" Type="@ButtonType.Primary">
+            Block
+        </Button>
+        <Button OnClick="@UnblockUsers" >
+            <Icon Type="unlock" Theme="outline" />
+        </Button>  
+        <Button OnClick="@DeleteUsers" >
+            <Icon Type="delete" Theme="outline" />
+        </Button>
+    </div>
+    <h5>
+        selections:
+        @if (selectedRows != null)
+        {
+            @foreach (var selected in selectedRows)
+            {
+                <Tag @key="selected" Closable OnClose="e=>RemoveSelection(selected.FullName)">@selected.FullName</Tag>
+            }
+            <Button Danger Size="small" OnClick="@(e => { table.SetSelection(null); })">Clear</Button>
+        }
+    </h5>
+
+    <Table @ref="table" DataSource="@UsersList" @bind-SelectedRows="selectedRows" RowSelectable="@(x => x.FullName!="Disabled User")">
+        <Selection Key="@context.Id" Type="@selectionType" Disabled="@(context.Id == "Disabled User")" />
+        <PropertyColumn Property="c=>c.Id" />
+        <PropertyColumn Property="c=>c.FullName">
+        </PropertyColumn>
+        <PropertyColumn Property="c=>c.Status" />
+        <PropertyColumn Property="c=>c.RegisterationDate" />
+        <PropertyColumn Property="c=>c.LastLogin" />
+    </Table>
+</div>
+
+
+@code {
+
+    ITable table;
+    public AppUser[] UsersList { get; set; }
+
+
+    IEnumerable<AppUser> selectedRows;
+    string selectionType = "checkbox";
+
+    public void RemoveSelection(string key)
+    {
+        var selected = selectedRows.Where(x => x.Id != key).ToList();
+        table.SetSelection(selected.Select(x => x.Id).ToArray());
+    }
+
+    public void BlockUsers()
+    {
+        userService.BlockUsers(selectedRows);
+    }    
+    public void UnblockUsers()
+    {
+        userService.UnblockUsers(selectedRows);
+    }
+    public void DeleteUsers()
+    {
+        userService.DeleteUsers(selectedRows);
+    }
+
+    protected override void OnInitialized()
+    {
+        UsersList =  userService.GetAppUsers().ToArray();
+    }
+}
