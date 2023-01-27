@@ -7,14 +7,14 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["BlazorApp/BlazorApp.csproj", "BlazorApp/"]
+COPY ["Task4/BlazorApp/BlazorApp.csproj", "BlazorApp/"]
 RUN dotnet restore "BlazorApp/BlazorApp.csproj"
 COPY . .
-WORKDIR "/src/BlazorApp"
-RUN dotnet build "BlazorApp.csproj" -c Release -o /app/build
+WORKDIR "/src/Task4/BlazorApp"
+RUN dotnet build "Task4/BlazorApp/BlazorApp.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "BlazorApp.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Task4/BlazorApp/BlazorApp.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
