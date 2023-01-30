@@ -34,10 +34,10 @@ namespace BlazorApp.Data.Services
             return result;
         }
 
-        public int DeleteUsers(IEnumerable<AppUser> users)
+        public async Task<int> DeleteUsers(IEnumerable<AppUser> users)
         {
              _context.RemoveRange(users);
-            var result = _context.SaveChanges();
+            var result = await _context.SaveChangesAsync();
             return result;
         }
 

@@ -124,8 +124,6 @@ namespace BlazorApp.Areas.Identity.Pages.Account
                     user.LastLogin = DateTime.Now;
                     await _userManager.UpdateAsync(user);
                     return LocalRedirect(returnUrl);
-
-
                 }
                 if (result.RequiresTwoFactor)
                 {

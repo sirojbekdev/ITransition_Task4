@@ -2,6 +2,7 @@ using BlazorApp.Areas.Identity;
 using BlazorApp.Areas.Identity.Data;
 using BlazorApp.Data;
 using BlazorApp.Data.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -33,8 +34,13 @@ builder.Services.Configure<SecurityStampValidatorOptions>(op =>
 builder.Services.AddRazorPages();
 builder.Services.AddAntDesign();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddScoped<IAuthorizationHandler, CorrectUserHandler>();
+builder.Services.AddAuthorization(opt =>
+{
+    opt.AddPolicy("IsActive", policy => policy.Requirements.Add(new CorrectUserRequirement()));
+});
 
 var app = builder.Build();
 

@@ -1,11 +1,17 @@
 ﻿@page "/Users"
 @using BlazorApp.Areas.Identity.Data;
 @using BlazorApp.Data.Services;
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.Mvc;
 @inject IUserService userService
-@attribute [Authorize]
+@inject UserManager<AppUser> userManager
+@inject SignInManager<AppUser> signInManager
+@inject NavigationManager navManager
+@attribute [Authorize(Policy = "IsActive")]
 
-<h3>Users</h3>
 
+
+ <h3>Users</h3>
 <div>
     <div class="flex-column">
         <Button Danger OnClick="@BlockUsers" Type="@ButtonType.Primary">
@@ -33,8 +39,8 @@
     <Table @ref="table" DataSource="@UsersList" @bind-SelectedRows="selectedRows" RowSelectable="@(x => x.FullName!="Disabled User")">
         <Selection Key="@context.Id" Type="@selectionType" Disabled="@(context.Id == "Disabled User")" />
         <PropertyColumn Property="c=>c.Id" />
-        <PropertyColumn Property="c=>c.FullName">
-        </PropertyColumn>
+        <PropertyColumn Property="c=>c.FullName" />
+        <PropertyColumn Property="c=>c.Email" />
         <PropertyColumn Property="c=>c.Status" />
         <PropertyColumn Property="c=>c.RegisterationDate" />
         <PropertyColumn Property="c=>c.LastLogin" />
@@ -43,10 +49,11 @@
 
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> _authenticationState { get; set; }
 
     ITable table;
     public AppUser[] UsersList { get; set; }
-
 
     IEnumerable<AppUser> selectedRows;
     string selectionType = "checkbox";
@@ -57,17 +64,32 @@
         table.SetSelection(selected.Select(x => x.Id).ToArray());
     }
 
-    public void BlockUsers()
+    private async Task BlockUsers()
     {
-        userService.BlockUsers(selectedRows);
+        var currentUserState = (await _authenticationState).User;
+        var currentUser = await userManager.GetUserAsync(currentUserState);
+        await userService.BlockUsers(selectedRows);
+        if (signInManager.IsSignedIn(currentUserState) && selectedRows.ToList().Contains(currentUser))
+        {
+            navManager.NavigateTo("/", true);
+            StateHasChanged();
+        }
     }    
-    public void UnblockUsers()
+    private void UnblockUsers()
     {
         userService.UnblockUsers(selectedRows);
     }
-    public void DeleteUsers()
+    private async Task DeleteUsers()
     {
-        userService.DeleteUsers(selectedRows);
+        var currentUserState = (await _authenticationState).User;
+        var currentUser = await userManager.GetUserAsync(currentUserState);
+        await userService.DeleteUsers(selectedRows);
+        if (signInManager.IsSignedIn(currentUserState) && selectedRows.ToList().Contains(currentUser))
+        {
+            navManager.NavigateTo("/", true);
+            StateHasChanged();
+            
+        }
     }
 
     protected override void OnInitialized()

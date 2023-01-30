@@ -7,6 +7,6 @@ namespace BlazorApp.Data.Services
         Task<int> BlockUsers(IEnumerable<AppUser> usersIDs);
         IEnumerable<AppUser> GetAppUsers();
         int UnblockUsers(IEnumerable<AppUser> users);
-        int DeleteUsers(IEnumerable<AppUser> users);
+        Task<int> DeleteUsers(IEnumerable<AppUser> users);
     }
 }
